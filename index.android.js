@@ -1,53 +1,42 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
 import {
-  AppRegistry,
-  StyleSheet,
   Text,
-  View
+  View,
+  AppRegistry
 } from 'react-native';
+import Meteor, { createContainer, MeteorListView } from 'react-native-meteor';
 
-export default class snippeter extends Component {
-  render() {
+Meteor.connect('ws://192.168.1.1:3000/websocket');
+
+class snippeter extends Component {
+  renderRow(task) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
+      <Text>{task.text}</Text>
+    );
+  }
+
+  render() {
+      const { tasksReady } = this.props;
+      return (
+      <View>
+        <Text>Title</Text>
+          {!tasksReady && <Text>Not Ready</Text>}
+
+          <MeteorListView
+            collection="tasks"
+            renderRow={this.renderRow}
+          />
+
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+export default createContainer( params => {
+  const handle = Meteor.subscribe('tasks');
+  return {
+    tasksReady: handle.ready()
+  };
+}, snippeter);
 
 AppRegistry.registerComponent('snippeter', () => snippeter);
